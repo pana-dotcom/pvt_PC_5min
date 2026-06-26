@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
-<title>PVT 反応時間テスト</title><head>
+<head>
+<meta charset="UTF-8">
+<title>PVT 反応時間テスト</title>
+
 <style>
 body {
     text-align: center;
@@ -36,6 +39,7 @@ button{
 }
 </style>
 </head>
+
 <body>
 
 <p class="instruction">赤になったらすぐEnterキー！</p>
@@ -45,7 +49,7 @@ button{
 <div id="box" class="waiting">✖</div>
 
 <script>
-let testDuration = 270000; // 
+let testDuration = 270000; // 4分30秒（ms）
 let testStartTime;
 
 let startTime;
@@ -60,6 +64,9 @@ const startBtn = document.getElementById("startBtn");
 // ✅ キー連打防止
 let keyLocked = false;
 
+// ✅ 強制終了タイマー
+let forceEndTimer;
+
 // スタート
 startBtn.addEventListener("click", () => {
     results = [];
@@ -67,14 +74,24 @@ startBtn.addEventListener("click", () => {
     testStartTime = Date.now();
     startBtn.disabled = true;
 
+    // ✅ フルスクリーン
     if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
     }
+
+    // ✅ ここが追加ポイント（重要）
+    forceEndTimer = setTimeout(() => {
+        if (isRunning) {
+            endTest(); // 強制終了
+        }
+    }, testDuration);
 
     startTest();
 });
 
 function startTest(){
+    if (!isRunning) return;
+
     box.style.background = "gray";
     box.classList.add("waiting");
     box.textContent = "✖";
@@ -86,6 +103,8 @@ function startTest(){
         if (!isRunning) return;
 
         requestAnimationFrame(() => {
+            if (!isRunning) return;
+
             box.style.background = "red";
             box.classList.remove("waiting");
             box.textContent = "Enter！";
@@ -100,7 +119,6 @@ function startTest(){
 document.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
 
-    // 長押し防止
     if (keyLocked) return;
     keyLocked = true;
 
@@ -113,7 +131,7 @@ document.addEventListener("keyup", (e) => {
     }
 });
 
-// ✅ 共通処理
+// ✅ 反応処理
 function handleResponse() {
     if (!isRunning) return;
     if (waiting) return; // フライング無視
@@ -123,18 +141,21 @@ function handleResponse() {
 
     results.push(reaction);
 
-    if (Date.now() - testStartTime >= testDuration) {
-        endTest();
-        return;
-    }
-
-    startTest();
+    startTest(); // 次の試行へ
 }
 
 // ✅ テスト終了
 function endTest() {
+    if (!isRunning) return;
+
     isRunning = false;
+    clearTimeout(forceEndTimer);
+
     startBtn.disabled = false;
+
+    box.style.background = "black";
+    box.textContent = "終了";
+
     downloadCSV();
 }
 
@@ -173,4 +194,4 @@ function downloadCSV() {
 
 </body>
 </html>
-<meta charset="UTF-8">
+``
