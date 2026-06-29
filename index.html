@@ -74,12 +74,9 @@ startBtn.addEventListener("click", () => {
     testStartTime = Date.now();
     startBtn.disabled = true;
 
-    // ✅ フルスクリーン
-    if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-    }
+    // ✅ フルスクリーン削除済み
 
-    // ✅ ここが追加ポイント（重要）
+    // ✅ 強制終了
     forceEndTimer = setTimeout(() => {
         if (isRunning) {
             endTest(); // 強制終了
@@ -194,4 +191,3 @@ function downloadCSV() {
 
 </body>
 </html>
-``
